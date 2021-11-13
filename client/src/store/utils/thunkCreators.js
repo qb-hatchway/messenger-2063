@@ -1,7 +1,7 @@
 import axios from "axios";
 import socket from "../../socket";
 import {
-  gotConversations,
+  getConversations,
   addConversation,
   setNewMessage,
   setSearchedUsers,
@@ -72,7 +72,7 @@ export const logout = (id) => async (dispatch) => {
 export const fetchConversations = () => async (dispatch) => {
   try {
     const { data } = await axios.get("/api/conversations");
-    dispatch(gotConversations(data));
+    dispatch(getConversations(data));
   } catch (error) {
     console.error(error);
   }
