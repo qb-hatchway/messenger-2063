@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Box, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { connect } from "react-redux";
@@ -21,8 +21,23 @@ const useStyles = makeStyles(() => ({
 
 const Sidebar = (props) => {
   const classes = useStyles();
-  const conversations = props.conversations || [];
   const { handleChange, searchTerm } = props;
+
+  const conversations = useMemo(() => {
+    if (!props.conversations) return [];
+    return props.conversations.sort((a, b) => {
+      // sort empty conversations to the end
+      const bIsEmpty = b.messages.length === 0;
+      const aIsEmpty = a.messages.length === 0;
+      if (bIsEmpty || aIsEmpty) return aIsEmpty - bIsEmpty;
+      // sort conversations by most recent message (descending)
+      // messages must be pre-sorted from oldest to newest
+      return (
+        Date.parse(b.messages[b.messages.length - 1].createdAt) -
+        Date.parse(a.messages[a.messages.length - 1].createdAt)
+      );
+    });
+  }, [props.conversations]);
 
   return (
     <Box className={classes.root}>
