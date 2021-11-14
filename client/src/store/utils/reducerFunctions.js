@@ -13,11 +13,12 @@ export const addMessageToStore = (state, payload) => {
 
   return state.map((convo) => {
     if (convo.id === message.conversationId) {
-      return {
+      const convoCopy = {
         ...convo,
-        messages: [...convo.messages, message],
-        latestMessageText: message.text,
       };
+      convoCopy.messages.push(message)
+      convoCopy.latestMessageText = message.text;
+      return convoCopy;
     } else {
       return convo;
     }
@@ -27,13 +28,9 @@ export const addMessageToStore = (state, payload) => {
 export const addOnlineUserToStore = (state, id) => {
   return state.map((convo) => {
     if (convo.otherUser.id === id) {
-      return {
-        ...convo,
-        otherUser: {
-          ...convo.otherUser,
-          online: true,
-        },
-      };
+      const convoCopy = { ...convo };
+      convoCopy.otherUser.online = true;
+      return convoCopy;
     } else {
       return convo;
     }
@@ -43,13 +40,9 @@ export const addOnlineUserToStore = (state, id) => {
 export const removeOfflineUserFromStore = (state, id) => {
   return state.map((convo) => {
     if (convo.otherUser.id === id) {
-      return {
-        ...convo,
-        otherUser: {
-          ...convo.otherUser,
-          online: false,
-        },
-      };
+      const convoCopy = { ...convo };
+      convoCopy.otherUser.online = false;
+      return convoCopy;
     } else {
       return convo;
     }
@@ -79,12 +72,13 @@ export const addSearchedUsersToStore = (state, users) => {
 export const addNewConvoToStore = (state, recipientId, message) => {
   return state.map((convo) => {
     if (convo.otherUser.id === recipientId) {
-      return {
+      const convoCopy = {
         ...convo,
-        id: message.conversationId,
-        messages: [...convo.messages, message],
-        latestMessageText: message.text,
       };
+      convoCopy.messages.push(message)
+      convoCopy.latestMessageText = message.text;
+      convoCopy.id = message.conversationId;
+      return convoCopy;
     } else {
       return convo;
     }
