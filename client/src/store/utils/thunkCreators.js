@@ -1,7 +1,7 @@
 import axios from "axios";
 import socket from "../../socket";
 import {
-  gotConversations,
+  getConversations,
   addConversation,
   setNewMessage,
   setSearchedUsers,
@@ -72,7 +72,15 @@ export const logout = (id) => async (dispatch) => {
 export const fetchConversations = () => async (dispatch) => {
   try {
     const { data } = await axios.get("/api/conversations");
-    dispatch(gotConversations(data));
+
+    // sort messages by date in each retrieved conversation
+    data.forEach((convo) => {
+      convo.messages.sort(
+        (a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt)
+      );
+    });
+
+    dispatch(getConversations(data));
   } catch (error) {
     console.error(error);
   }
@@ -93,9 +101,9 @@ const sendMessage = (data, body) => {
 
 // message format to send: {recipientId, text, conversationId}
 // conversationId will be set to null if its a brand new conversation
-export const postMessage = (body) => (dispatch) => {
+export const postMessage = (body) => async (dispatch) => {
   try {
-    const data = saveMessage(body);
+    const data = await saveMessage(body);
 
     if (!body.conversationId) {
       dispatch(addConversation(body.recipientId, data.message));
