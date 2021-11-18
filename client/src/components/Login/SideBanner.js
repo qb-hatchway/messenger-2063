@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme) => ({
     maxWidth: 296,
     textAlign: "center",
     lineHeight: "40px",
-    fontSize: 26,
+    fontWeight: "normal",
   },
 }));
 
@@ -36,7 +36,7 @@ const SideBanner = () => {
   return (
     <Box className={classes.root}>
       <BubbleIcon />
-      <Typography className={classes.text}>
+      <Typography variant='h4' className={classes.text}>
         Converse with anyone with any language
       </Typography>
     </Box>
