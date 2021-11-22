@@ -3,8 +3,8 @@ import { create } from "axios";
 // create new axios instance to avoid intercepters
 const axios = create();
 
-const CLOUD_NAME = "dafrtfylq";
-const UPLOAD_PRESET = "wddtjwpo";
+const CLOUD_NAME = process.env.REACT_APP_CLOUD_NAME;
+const UPLOAD_PRESET = process.env.REACT_APP_UPLOAD_PRESET;
 
 export const uploadImageFile = async (file) => {
   const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
