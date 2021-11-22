@@ -18,22 +18,26 @@ const useStyles = makeStyles((theme) => ({
 
 const AttachFileButton = (props) => {
   const classes = useStyles();
-  const { onImageUpload, onLoadingStart, onLoadingEnd } = props;
+  const { onUploadStart, onUploadEnd } = props;
   const [showError, setShowError] = useState(false);
 
   const onChange = (e) => {
     const files = e.currentTarget.files;
     if (!files.length) return;
-    // tell parent how many files are waiting to upload
-    onLoadingStart(files.length);
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
+      // generate unique id for attachment
+      const id = file.name.concat(i, Date.now());
+      onUploadStart(id);
       uploadImageFile(file).then((url) => {
-        onLoadingEnd();
-        setShowError(!url);
-        if (url) onImageUpload(url);
+        if (!url) setShowError(true);
+        onUploadEnd(id, url);
       });
     }
+  };
+
+  const resetFileInput = (e) => {
+    e.target.value = null;
   };
 
   return (
@@ -50,9 +54,7 @@ const AttachFileButton = (props) => {
         type="file"
         multiple
         onChange={onChange}
-        onClick={(event) => {
-          event.target.value = null;
-        }}
+        onClick={resetFileInput}
       />
       <label htmlFor="icon-button-file">
         <IconButton

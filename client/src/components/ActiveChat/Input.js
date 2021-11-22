@@ -4,7 +4,6 @@ import {
   FilledInput,
   InputAdornment,
   Box,
-  CircularProgress,
   FormHelperText,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
@@ -46,24 +45,19 @@ const Input = (props) => {
   const classes = useStyles();
   const { postMessage, otherUser, conversationId, user } = props;
   const [text, setText] = useState("");
+  // attachments: {id: string, url: string}[]
   const [attachments, setAttachments] = useState([]);
   const [formErrorMessage, setFormErrorMessage] = useState("");
-  const [loadingAttachments, setLoadingAttachments] = useState(0);
 
-  const showAttachmentsContainer = !!attachments.length || !!loadingAttachments;
-
-  const attachmentPlaceholders = useMemo(
-    () =>
-      Array(loadingAttachments)
-        .fill()
-        .map((_, i) => <CircularProgress key={i} />),
-    [loadingAttachments]
+  const isAttachmentLoading = useMemo(
+    () => attachments.find((x) => !x.url),
+    [attachments]
   );
 
-	// clear error message when attachments finish loading
+  // clear error message when attachments finish loading
   useEffect(() => {
-    if (!loadingAttachments) setFormErrorMessage("");
-  }, [loadingAttachments]);
+    if (isAttachmentLoading) setFormErrorMessage("");
+  }, [isAttachmentLoading]);
 
   const handleChange = (event) => {
     setText(event.target.value);
@@ -71,7 +65,7 @@ const Input = (props) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (loadingAttachments)
+    if (isAttachmentLoading)
       return setFormErrorMessage("Attachment is uploading...");
 
     // add sender user info if posting to a brand new convo, so that the other user will have access to username, profile pic, etc.
@@ -80,7 +74,7 @@ const Input = (props) => {
       recipientId: otherUser.id,
       conversationId,
       sender: conversationId ? null : user,
-      attachments,
+      attachments: attachments.map((x) => x.url),
     };
     await postMessage(reqBody);
     setText("");
@@ -88,28 +82,38 @@ const Input = (props) => {
     setFormErrorMessage("");
   };
 
-  const handleImageUpload = (imageUrl) =>
-    setAttachments((attachments) => [...attachments, imageUrl]);
+  const handleAttachmentUploadStart = (id) =>
+    setAttachments((attachments) => [...attachments, { id, url: "" }]);
 
-  const removeAttachmentAtIndex = (index) => {
+  const handleAttachmentUploadEnd = (id, url) => {
+    const uploadFailed = !url;
+    if (uploadFailed) return removeAttachmentById(id);
+    setAttachments((attachments) =>
+      attachments.map((x) => {
+        const isAttachment = x.id === id;
+        if (isAttachment) return { ...x, url };
+        return x;
+      })
+    );
+  };
+
+  const removeAttachmentById = (id) => {
     setAttachments((attachments) => {
-      attachments.splice(index, 1);
-      return [...attachments];
+      return attachments.filter((x) => x.id !== id);
     });
   };
 
   return (
     <form className={classes.root} onSubmit={handleSubmit}>
-      {showAttachmentsContainer && (
+      {!!attachments.length && (
         <Box className={classes.attachments}>
-          {attachments.map((imageUrl, i) => (
+          {attachments.map(({ url, id }) => (
             <AttachmentPreview
-              key={i}
-              onDelete={() => removeAttachmentAtIndex(i)}
-              imageUrl={imageUrl}
+              key={id}
+              onDelete={() => removeAttachmentById(id)}
+              imageUrl={url}
             />
           ))}
-          {attachmentPlaceholders}
         </Box>
       )}
       <FormControl fullWidth hiddenLabel error={!!formErrorMessage}>
@@ -123,9 +127,8 @@ const Input = (props) => {
           endAdornment={
             <InputAdornment position="end">
               <AttachFileButton
-                onImageUpload={handleImageUpload}
-                onLoadingStart={(n) => setLoadingAttachments((x) => x + n)}
-                onLoadingEnd={() => setLoadingAttachments((x) => x - 1)}
+                onUploadStart={handleAttachmentUploadStart}
+                onUploadEnd={handleAttachmentUploadEnd}
               />
             </InputAdornment>
           }

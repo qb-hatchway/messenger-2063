@@ -1,6 +1,6 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { Box, Fab } from "@material-ui/core";
+import { Box, CircularProgress, Fab } from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
 
 const useStyles = makeStyles((theme) => ({
@@ -33,6 +33,8 @@ const useStyles = makeStyles((theme) => ({
 const AttachmentPreview = (props) => {
   const { imageUrl, onDelete } = props;
   const classes = useStyles({ imageUrl });
+
+  if (!imageUrl) return <CircularProgress />;
 
   return (
     <Box className={classes.root}>

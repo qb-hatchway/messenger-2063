@@ -18,8 +18,8 @@ const MessageAttachments = (props) => {
   if (!attachments?.length) return null;
   return (
     <Box className={classes.attachments}>
-      {attachments.map((attachment, key) => (
-        <ImageBubble key={key} imageUrl={attachment} otherUser={otherUser} />
+      {attachments.map((url) => (
+        <ImageBubble key={url} imageUrl={url} otherUser={otherUser} />
       ))}
     </Box>
   );
