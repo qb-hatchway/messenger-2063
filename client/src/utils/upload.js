@@ -11,12 +11,16 @@ export const uploadImageFile = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("upload_preset", UPLOAD_PRESET);
-  const res = await axios({
-    method: "POST",
-    url,
-    withCredentials: false,
-    data: formData,
-    headers: { "X-Requested-With": "XMLHttpRequest" },
-  }).catch((err) => console.error("Image upload failed: " + err));
-  return res?.data?.secure_url;
+  try {
+    const res = await axios({
+      method: "POST",
+      url,
+      withCredentials: false,
+      data: formData,
+      headers: { "X-Requested-With": "XMLHttpRequest" },
+    });
+    return res?.data?.secure_url || null;
+  } catch (error) {
+    console.error("Image upload failed: " + error);
+  }
 };
