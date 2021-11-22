@@ -21,18 +21,18 @@ const AttachFileButton = (props) => {
   const { onImageUpload, onLoadingStart, onLoadingEnd } = props;
   const [showError, setShowError] = useState(false);
 
-  const onChange = async (e) => {
+  const onChange = (e) => {
     const files = e.currentTarget.files;
     if (!files.length) return;
     // tell parent how many files are waiting to upload
     onLoadingStart(files.length);
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const url = await uploadImageFile(file);
-      // file finished uploading
-      onLoadingEnd();
-      setShowError(!url);
-      if (url) onImageUpload(url);
+      uploadImageFile(file).then((url) => {
+        onLoadingEnd();
+        setShowError(!url);
+        if (url) onImageUpload(url);
+      });
     }
   };
 
