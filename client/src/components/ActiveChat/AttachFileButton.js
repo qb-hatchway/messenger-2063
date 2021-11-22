@@ -24,12 +24,12 @@ const AttachFileButton = (props) => {
   const onChange = async (e) => {
     const files = e.currentTarget.files;
     if (!files.length) return;
-		// tell parent how many files are waiting to upload
+    // tell parent how many files are waiting to upload
     onLoadingStart(files.length);
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const url = await uploadImageFile(file);
-			// file finished uploading
+      // file finished uploading
       onLoadingEnd();
       setShowError(!url);
       if (url) onImageUpload(url);
@@ -50,6 +50,9 @@ const AttachFileButton = (props) => {
         type="file"
         multiple
         onChange={onChange}
+        onClick={(event) => {
+          event.target.value = null;
+        }}
       />
       <label htmlFor="icon-button-file">
         <IconButton
