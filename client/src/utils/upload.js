@@ -17,6 +17,6 @@ export const uploadImageFile = async (file) => {
     withCredentials: false,
     data: formData,
     headers: { "X-Requested-With": "XMLHttpRequest" },
-  }).catch((err) => console.log("Image upload failed: " + err));
+  }).catch((err) => console.error("Image upload failed: " + err));
   return res?.data?.secure_url;
 };
