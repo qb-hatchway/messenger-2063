@@ -22,5 +22,6 @@ export const uploadImageFile = async (file) => {
     return res?.data?.secure_url || null;
   } catch (error) {
     console.error("Image upload failed: " + error);
+    return null;
   }
 };

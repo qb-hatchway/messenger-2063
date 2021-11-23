@@ -18,22 +18,18 @@ const useStyles = makeStyles((theme) => ({
 
 const AttachFileButton = (props) => {
   const classes = useStyles();
-  const { onUploadStart, onUploadEnd } = props;
+  const { onUploadStart, onUploadComplete } = props;
   const [showError, setShowError] = useState(false);
 
-  const onChange = (e) => {
+  const onChange = async (e) => {
     const files = e.currentTarget.files;
     if (!files.length) return;
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      // generate unique id for attachment
-      const id = file.name.concat(i, Date.now());
-      onUploadStart(id);
-      uploadImageFile(file).then((url) => {
-        if (!url) setShowError(true);
-        onUploadEnd(id, url);
-      });
-    }
+    onUploadStart();
+    const urls = await Promise.all([...files].map(uploadImageFile));
+    const uploadFailed = urls.includes(null);
+    if (uploadFailed) setShowError(true);
+    const validUrls = urls.filter(Boolean);
+    onUploadComplete(validUrls);
   };
 
   const resetFileInput = (e) => {

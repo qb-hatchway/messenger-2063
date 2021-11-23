@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FormControl,
   FilledInput,
   InputAdornment,
   Box,
   FormHelperText,
+  CircularProgress,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { connect } from "react-redux";
@@ -45,18 +46,13 @@ const Input = (props) => {
   const classes = useStyles();
   const { postMessage, otherUser, conversationId, user } = props;
   const [text, setText] = useState("");
-  // attachments: {id: string, url: string}[]
   const [attachments, setAttachments] = useState([]);
+  const [isAttachmentLoading, setIsAttachmentLoading] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
-
-  const isAttachmentLoading = useMemo(
-    () => attachments.find((x) => !x.url),
-    [attachments]
-  );
 
   // clear error message when attachments finish loading
   useEffect(() => {
-    if (isAttachmentLoading) setFormErrorMessage("");
+    if (!isAttachmentLoading) setFormErrorMessage("");
   }, [isAttachmentLoading]);
 
   const handleChange = (event) => {
@@ -74,46 +70,38 @@ const Input = (props) => {
       recipientId: otherUser.id,
       conversationId,
       sender: conversationId ? null : user,
-      attachments: attachments.map((x) => x.url),
+      attachments,
     };
     await postMessage(reqBody);
     setText("");
     setAttachments([]);
-    setFormErrorMessage("");
   };
 
-  const handleAttachmentUploadStart = (id) =>
-    setAttachments((attachments) => [...attachments, { id, url: "" }]);
+  const showAttachmentLoadingIndicator = () => setIsAttachmentLoading(true);
 
-  const handleAttachmentUploadEnd = (id, url) => {
-    const uploadFailed = !url;
-    if (uploadFailed) return removeAttachmentById(id);
-    setAttachments((attachments) =>
-      attachments.map((x) => {
-        const isAttachment = x.id === id;
-        if (isAttachment) return { ...x, url };
-        return x;
-      })
-    );
+  const removeAttachmentByUrl = (url) => {
+    setAttachments((attachments) => attachments.filter((x) => x !== url));
   };
 
-  const removeAttachmentById = (id) => {
-    setAttachments((attachments) => {
-      return attachments.filter((x) => x.id !== id);
-    });
+  const addAttachments = (urls) => {
+    setAttachments((attachments) => [...attachments, ...urls]);
+    setIsAttachmentLoading(false);
   };
+
+  const showAttachmentsContainer = !!attachments.length || isAttachmentLoading;
 
   return (
     <form className={classes.root} onSubmit={handleSubmit}>
-      {!!attachments.length && (
+      {showAttachmentsContainer && (
         <Box className={classes.attachments}>
-          {attachments.map(({ url, id }) => (
+          {attachments.map((url) => (
             <AttachmentPreview
-              key={id}
-              onDelete={() => removeAttachmentById(id)}
+              key={url}
+              onDelete={() => removeAttachmentByUrl(url)}
               imageUrl={url}
             />
           ))}
+          {isAttachmentLoading && <CircularProgress />}
         </Box>
       )}
       <FormControl fullWidth hiddenLabel error={!!formErrorMessage}>
@@ -127,8 +115,8 @@ const Input = (props) => {
           endAdornment={
             <InputAdornment position="end">
               <AttachFileButton
-                onUploadStart={handleAttachmentUploadStart}
-                onUploadEnd={handleAttachmentUploadEnd}
+                onUploadStart={showAttachmentLoadingIndicator}
+                onUploadComplete={addAttachments}
               />
             </InputAdornment>
           }
